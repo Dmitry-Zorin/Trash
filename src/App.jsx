@@ -44,17 +44,17 @@ const App = () => {
 			map.geoObjects.add(multiRoute)
 		}
 
-		const socket = io('http://172.20.10.12:5005')
-
-		socket.on('connect', () => {
-			console.log('socket io connected!')
-			socket.emit('message', 'gimme image')
-
-			socket.on('message', message => {
-				console.log('message: ', message)
-				setImage(message)
-			})
-		})
+		// const socket = io('http://172.20.10.12:5005')
+		//
+		// socket.on('connect', () => {
+		// 	console.log('socket io connected!')
+		// 	socket.emit('message', 'message')
+		//
+		// 	socket.on('message', message => {
+		// 		console.log('message: ', message)
+		// 		setImage(message)
+		// 	})
+		// })
 
 		loadScript('https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=fa8b869d-ab3e-46f5-a2d5-1b7f56fd63f7', () => {
 			ymaps.ready(init)
@@ -62,7 +62,11 @@ const App = () => {
 	}, [])
 
 	useEffect(() => {
-		if (myMap && fire) {
+		setTimeout(() => {
+			setFire(!fire)
+		}, 5000)
+		if (!myMap) return
+		if (fire) {
 			const myPlacemark = new ymaps.Placemark(cams[28], {
 				hintContent: 'Пожар',
 			}, {
@@ -104,16 +108,16 @@ const App = () => {
 	}
 
 	return (
-		<div className='App' style={{ border: `1vh solid transparent`, background: `${fire ? 'red' : '#2E4053'}` }}>
-			<div style={{ width: '100%', height: '10vh', display: 'flex' }}>
-				<img src={fire ? fireImg : ecoImg} style={{ height: '7vh', margin: 10, marginRight: 20 }}/>
+		<div className='App' style={{ border: `7px solid transparent`, background: `${fire ? 'red' : '#2E4053'}` }}>
+			<div style={{ width: '100%', height: 70, display: 'flex' }}>
+				<img src={fire ? fireImg : ecoImg} style={{ height: 35, margin: 15, marginRight: 20 }}/>
 				{fire ? (
 					<h2 style={{ color: 'white' }}>Пожар!!!</h2>
 				) : (
 					<h2 style={{ color: '#FFC65C' }}>Чистый Татарстан</h2>
 				)}
 			</div>
-			<div id='map' style={{ width: '100%', height: '88vh' }}/>
+			<div id='map' style={{ width: '100%', height: 'calc(100vh - 84px)' }}/>
 			{/*<img id="ItemPreview" src={`data:image/jpg;base64,${encode(new Uint8Array(image))}`}/>*/}
 		</div>
 	)
