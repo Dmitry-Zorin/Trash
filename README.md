@@ -46,7 +46,8 @@ python fire.py
 Выполните
 
 ~~~
-cd yolo
+git clone https://github.com/Dmitry-Zorin/Trash
+cd Trash/yolo
 pip install -qr requirements.txt
 python detect.py --source 0 # webcam
                           img.jpg # image 
@@ -55,8 +56,9 @@ python detect.py --source 0 # webcam
                           path/*.jpg # glob
                           'https://youtu.be/Zgi9g1ksQHc' # YouTube
                           'rtsp://example.com/media.mp4' # RTSP, RTMP, HTTP stream
-python detect.py --weights yolov5s.pt --img 640 --conf 0.25 --source data/images
-display.Image(filename='runs/detect/exp/23-11-2021_02-36-38_PM.png', width=600) 
+python detect.py --weights yolov5t.pt --img 416 --conf 0.25 --source data/images
+# Валидация данных
+python val.py --weights yolov5t.pt --data data.yaml --img 416 --iou 0.65 --half
 ~~~
 
 ### Установка и запуск веб-интерфейса
