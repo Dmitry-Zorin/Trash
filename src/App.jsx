@@ -1,17 +1,23 @@
 import React, { useEffect, useState } from 'react'
-import ecoImg from './eco.png'
-import fireImg from './fire.png'
-import trashImg from './trash.png'
-import {io} from 'socket.io-client'
+import { CenterModal, ModalCloseTarget, ModalTitle } from 'react-spring-modal'
+import 'react-spring-modal/styles.css'
+import { io } from 'socket.io-client'
+import ecoImg from './images/eco.png'
+import fireImg from './images/fire.png'
+import landfillImg from './images/landfill.png'
+import trashImg from './images/trash.png'
+import truckImg from './images/truck.png'
+import fireDetectedImg from './images/fire-detected.jpg'
 
 const cams = {
 	0: [55.863581, 49.083282],
 	1: [55.860292, 49.082115],
 	2: 'Татарстан, Лечебная улица, 7',
-	3: [55.868811, 49.064165]
+	3: [55.868736, 49.084330],
+	4: [55.868811, 49.064165],
 }
 
-const fireCam = [55.862292, 49.082715]
+const fireCam = [55.865249, 49.075854]
 
 const loadScript = (src, onLoad) => {
 	const script = document.createElement('script')
@@ -55,6 +61,7 @@ const App = () => {
 	const [fire, setFire] = useState(false)
 	const [fireMark, setFireMark] = useState()
 	const [myMap, setMyMap] = useState()
+	const [isOpen, setOpen] = useState(false)
 
 	useEffect(() => {
 		function init() {
@@ -70,44 +77,72 @@ const App = () => {
 				referencePoints: Object.values(cams),
 			}, {
 				boundsAutoApply: true,
-				wayPointStartIconLayout: "default#image",
-				wayPointStartIconImageHref: trashImg,
-				wayPointStartIconImageSize: [30, 30],
-				wayPointStartIconImageOffset: [-15, -15],
-				wayPointFinishIconLayout: "default#image",
-				wayPointFinishIconImageHref: trashImg,
-				wayPointFinishIconImageSize: [30, 30],
-				wayPointFinishIconImageOffset: [-15, -15],
-				viaPointIconLayout: "default#image",
-				viaPointIconImageHref: trashImg,
-				viaPointIconImageSize: [30, 30],
-				viaPointIconImageOffset: [-15, -15],
+				wayPointStartIconLayout: 'default#image',
+				wayPointStartIconImageHref: truckImg,
+				wayPointStartIconImageSize: [40, 40],
+				wayPointStartIconImageOffset: [-20, -20],
+				wayPointFinishIconLayout: 'default#image',
+				wayPointFinishIconImageHref: landfillImg,
+				wayPointFinishIconImageSize: [40, 40],
+				wayPointFinishIconImageOffset: [-20, -20],
+				wayPointIconLayout: 'default#image',
+				wayPointIconImageHref: trashImg,
+				wayPointIconImageSize: [40, 40],
+				wayPointIconImageOffset: [-20, -20],
+				routeActiveStrokeWidth: 5,
+				routeActiveStrokeColor: '#003DC0',
 			})
 
 			map.geoObjects.add(multiRoute)
+
+			const myCircle = new ymaps.Circle([
+				[55.864517, 49.074494],
+				1500,
+			], {
+				balloonContent: 'Радиус круга - 1,5 км',
+			}, {
+				fillColor: 'rgba(208,222,250,0.47)',
+				strokeColor: '#2E4053',
+				strokeOpacity: 0.5,
+				strokeWidth: 5,
+			})
+
+			map.geoObjects.add(myCircle)
 		}
 
-		const socket = io('http://172.20.10.12:5005')
+		const socket = io('http://192.168.1.183:5005')
 
-		socket.on('connect', () => {
-			console.log('socket io connected!')
-			socket.emit('message', 'message')
+		// socket.on('connect', () => {
+		// 	console.log('socket io connected!')
+		//
+		// 	const interval = setTimeout(() => {
+		// 		socket.emit('message', 'message')
+		// 	}, 10000)
+		//
+		// 	socket.on('message', message => {
+		// 		console.log('message: ', message)
+		// 		if (message) {
+		// 			setImage(message)
+		// 			setFire(true)
+		// 		}
+		// 	})
+		//
+		// 	return () => clearTimeout(interval)
+		// })
 
-			socket.on('message', message => {
-				console.log('message: ', message)
-				setImage(message)
-			})
-		})
+		// Для Демо
+		const interval = setTimeout(() => {
+			setFire(true)
+		}, 10000)
 
 		loadScript('https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=fa8b869d-ab3e-46f5-a2d5-1b7f56fd63f7', () => {
 			ymaps.ready(init)
 		})
+
+		return () => clearTimeout(interval)
 	}, [])
 
 	useEffect(() => {
-		setTimeout(() => {
-			setFire(!fire)
-		}, 5000)
 		if (!myMap) return
 		if (fire) {
 			const myPlacemark = new ymaps.Placemark(fireCam, {
@@ -118,15 +153,19 @@ const App = () => {
 				iconImageSize: [60, 60],
 				iconImageOffset: [-30, -30],
 			})
+			myPlacemark.events.add('click', () => {
+				setOpen(true)
+			})
 			myMap.geoObjects.add(myPlacemark)
 			setFireMark(myPlacemark)
-		} else {
+		}
+		else {
 			myMap.geoObjects.remove(fireMark)
 		}
 	}, [myMap, fire])
 
 	return (
-		<div className='App' style={{ border: `7px solid transparent`, background: `${fire ? 'red' : '#2E4053'}` }}>
+		<div className='App' style={{ border: `20px solid transparent`, borderTop: 0, background: `${fire ? '#EE324A' : '#2E4053'}` }}>
 			<div style={{ width: '100%', height: 70, display: 'flex' }}>
 				<img src={fire ? fireImg : ecoImg} style={{ height: 35, margin: 15, marginRight: 20 }}/>
 				{fire ? (
@@ -135,8 +174,30 @@ const App = () => {
 					<h2 style={{ color: '#FFC65C' }}>Чистый Татарстан</h2>
 				)}
 			</div>
-			<div id='map' style={{ width: '100%', height: 'calc(100vh - 84px)' }}/>
-			{/*<img id="ItemPreview" src={`data:image/jpg;base64,${encode(new Uint8Array(image))}`}/>*/}
+			<div id='map' style={{ width: '100%', height: 'calc(100vh - 100px)', border: '5px solid #FFC65C', borderRadius: 5 }}/>
+			<CenterModal isOpen={isOpen} onDismiss={() => setOpen(false)}>
+				<ModalTitle style={{ textAlign: 'center', color: 'red' }}>Обнаружен пожар</ModalTitle>
+				<img
+					id='ItemPreview'
+					// src={`data:image/jpg;base64,${encode(new Uint8Array(image))}`}
+					src={fireDetectedImg}
+					style={{ width: '100%', height: 'auto', maxHeight: '45vh' }}
+				/>
+				<ModalCloseTarget style={{ display: 'flex' }}>
+					<button
+						className='button button1'
+						onClick={() => setFire(false)}
+					>
+						Вызвать пожарную службу
+					</button>
+					<button
+						className='button button1'
+						onClick={() => setFire(false)}
+					>
+						Отменить тревогу
+					</button>
+				</ModalCloseTarget>
+			</CenterModal>
 		</div>
 	)
 }
