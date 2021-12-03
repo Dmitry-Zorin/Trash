@@ -29,6 +29,10 @@
 
 ### Установка и запуск пакета fire
 
+Скачайте (Большие файлы не поместились на GitHub)
+
+https://drive.google.com/drive/u/0/folders/17M-gLAasDx80RSOeogLNTYNR6XKz3OG7
+
 Выполните
 
 ~~~
