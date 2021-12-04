@@ -31,7 +31,7 @@
 
 Скачайте (Большие файлы не поместились на GitHub)
 
-https://drive.google.com/drive/folders/17M-gLAasDx80RSOeogLNTYNR6XKz3OG7?usp=sharing
+https://drive.google.com/drive/folders/1bxHBfdDjCgvjsg3PHj9smdmhkT7IWx0K?usp=sharing
 
 Выполните
 

@@ -163,7 +163,7 @@ const App = () => {
 		})
 
 		multiRoute.model.events.once('requestsuccess', function () {
-			for (let i in Object.keys(cams).slice(1, -1)) {
+			for (let i in Object.keys(cams)) {
 				console.log(i)
 				multiRoute.getWayPoints().get(+i + 1).events.add('click', () => {
 					setOpen2(true)
