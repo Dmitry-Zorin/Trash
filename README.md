@@ -40,7 +40,7 @@ cd fire
 pip install tensorflow opencv-python keras imageai
 python fire.py
 # Параллельно в другой вкладке
-python server
+python server.py
 ~~~
 
 ### Установка и запуск пакета yolo
