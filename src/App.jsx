@@ -2,20 +2,22 @@ import React, { useEffect, useState } from 'react'
 import { CenterModal, ModalCloseTarget, ModalTitle } from 'react-spring-modal'
 import 'react-spring-modal/styles.css'
 import { io } from 'socket.io-client'
+import camImg from './images/cam.jpg'
 import ecoImg from './images/eco.png'
+import fireDetectedImg from './images/fire-detected.jpg'
 import fireImg from './images/fire.png'
 import landfillImg from './images/landfill.png'
 import trashImg from './images/trash.png'
 import truckImg from './images/truck.png'
-import fireDetectedImg from './images/fire-detected.jpg'
 
-const cams = {
-	0: [55.863581, 49.083282],
-	1: [55.860292, 49.082115],
-	2: 'Татарстан, Лечебная улица, 7',
-	3: [55.868736, 49.084330],
-	4: [55.868811, 49.064165],
-}
+const cameras = [
+	[55.860292, 49.082115],
+	'Татарстан, Лечебная улица, 7',
+	[55.868736, 49.084330],
+]
+
+const startPoint = [55.863581, 49.083282]
+const endPoint = [55.868811, 49.064165]
 
 const fireCam = [55.865249, 49.075854]
 
@@ -62,6 +64,9 @@ const App = () => {
 	const [fireMark, setFireMark] = useState()
 	const [myMap, setMyMap] = useState()
 	const [isOpen, setOpen] = useState(false)
+	const [isOpen2, setOpen2] = useState(false)
+	const [cams, setCams] = useState([])
+	const [route, setRoute] = useState()
 
 	useEffect(() => {
 		function init() {
@@ -72,28 +77,6 @@ const App = () => {
 			})
 
 			setMyMap(map)
-
-			const multiRoute = new ymaps.multiRouter.MultiRoute({
-				referencePoints: Object.values(cams),
-			}, {
-				boundsAutoApply: true,
-				wayPointStartIconLayout: 'default#image',
-				wayPointStartIconImageHref: truckImg,
-				wayPointStartIconImageSize: [40, 40],
-				wayPointStartIconImageOffset: [-20, -20],
-				wayPointFinishIconLayout: 'default#image',
-				wayPointFinishIconImageHref: landfillImg,
-				wayPointFinishIconImageSize: [40, 40],
-				wayPointFinishIconImageOffset: [-20, -20],
-				wayPointIconLayout: 'default#image',
-				wayPointIconImageHref: trashImg,
-				wayPointIconImageSize: [40, 40],
-				wayPointIconImageOffset: [-20, -20],
-				routeActiveStrokeWidth: 5,
-				routeActiveStrokeColor: '#003DC0',
-			})
-
-			map.geoObjects.add(multiRoute)
 
 			const myCircle = new ymaps.Circle([
 				[55.864517, 49.074494],
@@ -110,8 +93,8 @@ const App = () => {
 			map.geoObjects.add(myCircle)
 		}
 
-		const socket = io('http://192.168.1.183:5005')
-
+		// const socket = io('http://192.168.1.183:5005')
+		//
 		// socket.on('connect', () => {
 		// 	console.log('socket io connected!')
 		//
@@ -131,16 +114,66 @@ const App = () => {
 		// })
 
 		// Для Демо
-		const interval = setTimeout(() => {
+		setTimeout(() => {
 			setFire(true)
-		}, 10000)
+		}, 12000)
+
+		setTimeout(() => {
+			setCams(cams => [...cams, cameras[0]])
+		}, 3000)
+
+		setTimeout(() => {
+			setCams(cams => [...cams, cameras[1]])
+		}, 6000)
+
+		setTimeout(() => {
+			setCams(cams => [...cams, cameras[2]])
+		}, 9000)
 
 		loadScript('https://api-maps.yandex.ru/2.1/?lang=ru_RU&apikey=fa8b869d-ab3e-46f5-a2d5-1b7f56fd63f7', () => {
 			ymaps.ready(init)
 		})
-
-		return () => clearTimeout(interval)
 	}, [])
+
+	useEffect(() => {
+		if (!myMap) return
+		myMap.geoObjects.remove(route)
+		const multiRoute = new ymaps.multiRouter.MultiRoute({
+			referencePoints: [
+				startPoint,
+				...cams,
+				endPoint,
+			],
+		}, {
+			boundsAutoApply: true,
+			wayPointStartIconLayout: 'default#image',
+			wayPointStartIconImageHref: truckImg,
+			wayPointStartIconImageSize: [40, 40],
+			wayPointStartIconImageOffset: [-20, -20],
+			wayPointFinishIconLayout: 'default#image',
+			wayPointFinishIconImageHref: landfillImg,
+			wayPointFinishIconImageSize: [40, 40],
+			wayPointFinishIconImageOffset: [-20, -20],
+			wayPointIconLayout: 'default#image',
+			wayPointIconImageHref: trashImg,
+			wayPointIconImageSize: [40, 40],
+			wayPointIconImageOffset: [-20, -20],
+			routeActiveStrokeWidth: 5,
+			routeActiveStrokeColor: '#003DC0',
+		})
+
+		multiRoute.model.events.once('requestsuccess', function () {
+			for (let i in Object.keys(cams).slice(1, -1)) {
+				console.log(i)
+				multiRoute.getWayPoints().get(+i + 1).events.add('click', () => {
+					setOpen2(true)
+				})
+			}
+		})
+
+		myMap.geoObjects.add(multiRoute)
+		setRoute(multiRoute)
+	}, [myMap, cams.length])
 
 	useEffect(() => {
 		if (!myMap) return
@@ -175,6 +208,15 @@ const App = () => {
 				)}
 			</div>
 			<div id='map' style={{ width: '100%', height: 'calc(100vh - 100px)', border: '5px solid #FFC65C', borderRadius: 5 }}/>
+			<CenterModal isOpen={isOpen2} onDismiss={() => setOpen2(false)}>
+				<ModalTitle style={{ textAlign: 'center', color: '#2E4053' }}>Камера</ModalTitle>
+				<img
+					id='ItemPreview2'
+					// src={`data:image/jpg;base64,${encode(new Uint8Array(image))}`}
+					src={camImg}
+					style={{ width: '100%', height: 'auto', maxHeight: '45vh' }}
+				/>
+			</CenterModal>
 			<CenterModal isOpen={isOpen} onDismiss={() => setOpen(false)}>
 				<ModalTitle style={{ textAlign: 'center', color: 'red' }}>Обнаружен пожар</ModalTitle>
 				<img
