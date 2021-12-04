@@ -13,7 +13,7 @@
 <ul>
 	<li>Python</li>
 	<li>OPENCV, ImageAI</li>
-	<li>Keras, TensorFlow</li>
+	<li>Keras, TensorFlow, PyTorch</li>
 	<li>NumPy</li>
 	<li>HTML, CSS, JavaScript</li>
 	<li>React</li>
@@ -38,7 +38,9 @@ https://drive.google.com/drive/folders/17M-gLAasDx80RSOeogLNTYNR6XKz3OG7?usp=sha
 ~~~
 cd fire
 pip install tensorflow opencv-python keras imageai
-python fire.py 
+python fire.py
+# Параллельно в другой вкладке
+python server
 ~~~
 
 ### Установка и запуск пакета yolo
@@ -56,9 +58,13 @@ python detect.py --source 0 # webcam
                           path/*.jpg # glob
                           'https://youtu.be/Zgi9g1ksQHc' # YouTube
                           'rtsp://example.com/media.mp4' # RTSP, RTMP, HTTP stream
-python detect.py --weights yolov5t.pt --img 416 --conf 0.25 --source data/images
+python detect.py --weights runs/train/exp/weights/yolov5.pt --img 416 --conf 0.25 --source data/images/23-11-2021_02-36-38_PM.png
+
+# Тренировка, данные заливаются с Roboflow
+python train.py --img 416 --batch 16 --epochs 30 --data tatarstan-1/data.yaml --weights yolov5s.pt --cache
+
 # Валидация данных
-python val.py --weights yolov5t.pt --data data.yaml --img 416 --iou 0.65 --half
+python val.py --weights runs/train/exp/weights/yolov5.pt --data data.yaml --img 416 --iou 0.65 --half
 ~~~
 
 ### Установка и запуск веб-интерфейса
